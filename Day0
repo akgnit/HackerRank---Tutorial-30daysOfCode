@@ -1,0 +1,10 @@
+
+int main() {
+  
+    string input_string; 
+    input_string = "Welcome to 30 Days of Code!";
+    cout << "Hello, World." << endl;
+    cout << input_string;
+    return 0;
+}
+
