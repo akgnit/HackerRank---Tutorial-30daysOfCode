@@ -16,22 +16,21 @@ class Solution{
     
     
     public:   
-    Node* insert(Node *head,int data)
+    Node* insert(Node * const head,const int data)
       {
-          Node* _new = new Node(_data);
-        _new->next = NULL;
-        if (head == NULL) {
-            // don't forget the initial case!
-            // head is NULL b.a.e. on first run
-            head = _new;
-        } else {
-            Node* start = head;
-            while(start->next != NULL) {
-                start = start->next;
-            }
-            start->next = _new;
-        }
-        return head;
+          Node * newNode = new Node(data);
+          Node * tail = head;
+          if ( !head ) { return newNode; }
+          
+          // Locate tail node
+          for (;tail->next; tail = tail->next);
+
+          // Insert at end of list
+          tail->next = newNode;
+          
+          return head;
+     
+     
     
     
       }    
