@@ -1,0 +1,133 @@
+
+
+#include <cmath>
+#include <string>
+#include <bitset>
+#include <cstdlib>
+#include <sstream>
+#include <iostream>
+#include <bitset>
+using namespace std;
+
+
+//Problem: Day 29: Bitwise AND Problem 30 days of code
+// Link:  https://www.hackerrank.com/challenges/30-bitwise-and
+
+/*Solution Description
+Note 2<=k<=N (A*)
+K can either be odd or even, and it can easily be proven with a bit of deduction and logical reasoning that the maximum value of A&B is either (k-1)
+or (k-2).
+Note than since A&B must be less than K, and is an integer (switching off 1s from a binary number will give an integer), then the theoretical maximum
+of A&B is (k-1). If the theoretical maximum is feasible, then it is the maximum. Using this approach avoids the need to try out all combinations of A&B
+-------------------------------------------------------
+Scenario 1: k is Odd
+-------------------------------------------------------
+=>(k-1) is even
+From (A*), 1<=k-1<k<=N  (proves that k-1 will be always be in range)
+The theoretical maximum can be achieved by setting A=k-1, and B=k
+-------------------------------------------------------
+Scenario 2: k is Even and of form 2^m i.e. a power of 2
+Possible Results: (k-1) or (k-2)
+-------------------------------------------------------
+The theoretical maximum, (k-1), in binary will always consist of all 1s. 
+Let (k-1) be a t digit number.
+In order to achieve (k-1) via bitwise multiplication and satisfying the given restrictions: 
+- both A and B must have 1's in their rightmost t digits => A and B must have at least t digits
+- let A=(k-1) (since A<B), and see if you can find another valid value in the range (see A*) to represent B
+- the smallest number that can satisfy B's requirement is a number with (t+1) digits, all of which are 1s (since there's only one t digit binary number with all 1s) . If this number is in range, the theoretical maximum is attainable. 
+The smallest possible valid value for B is (2^{m+1})-1, all binary numbers with all 1s are one less than a power of 2.
+- If the above number is not in range (i.e. outside the range), then no other number whose last t digits are 1's is in range (since they are larger than the smallest possible value for B), and one would conclude that
+the theoretical maximum is unattainable. In this situation, the next best option is (k-2) which is even and thus attainable (see scenario 1). Provided k-2 is >0, if not there's no answer
+-------------------------------------------------------
+Scenario 3: k is Even and NOT of form 2^m i.e. NOT a power of 2
+Possible Results: (k-1) or (k-2)
+-------------------------------------------------------
+Theoretical maximum, (k-1) is odd (last digit is 1, so has at least one 1). Let it have t digits, where t>=1
+- (k-2) is even and definitely achievable (see scenario 1), try to beat this
+- To achieve (k-1) via bitwise multiplication, A and B must have 1s in same position as (k-1)
+- Since (k-1) will start with a 1 (like all binary numbers), A and B must have at least t digits
+- A < B
+- Because k is not a power of 2, we know (k-1) is not all 1s i.e. it has at least one zero
+-Now look for the smallest 2 numbers satisfying above conditions, if you can't find 2 such numbers in range, then (k-1) is not attainable
+- The smallest possible number is (k-1) itself since the 1s have to be retained, one can't go smaller => A=(k-1) (since smallest in range and A<B)
+- Now the smallest valid value for B, would be the next number larger than (k-1), which retains (k-1)'s 1s. That number is the one achievable by 
+switching on the rightmost zero of (k-1) i.e. we increment by the smallest possible amount whilst retaining its 1s. If this number is not in range, then 
+(k-1) is not attainable.
+    */
+class Binary{
+public:
+    static long to(int decimal,int level=0){
+        static stringstream binary;
+        if(decimal==1){//terminating condition
+            return 1;
+        }
+        
+        binary<<to(decimal/2,level+1);
+        if(level==0){
+            static long result;
+            binary<<(decimal%2);
+            istringstream(binary.str())>>result;
+            return result;
+        }
+        return (decimal%2);
+    };
+    static int from(int bin){//convert from binary to decimal
+        int sum=0,exponent=0;
+        
+        while(bin != 0) {
+            int remainder = bin%10;
+            sum+=remainder*pow(2,exponent++);
+            bin/=10;
+        }
+        
+        return sum;
+    };
+};//end of class Binary
+
+
+long getResult(int k, int n){
+    long lastDigit,result;
+    double m;//where k=2^m
+    //Convert k to binary and determine last digit
+    istringstream ldSS(bitset<1>(k).to_string());//specifying 1 bit only gives the last digit
+    ldSS>>lastDigit;
+    
+    if(lastDigit==1){//means k>=3 thus k-1 always exist
+        return result=k-1;//because  k-1 is maximum possible less than k, and is obtainable by switching of last digit of k    //note that k is always in the range since k<=N
+    }
+    m=log2((double) k);
+    if( floor(m) == m){// k is of the form 2^m
+        //check to see if 2^(m+1)-1 is in range
+        result=( pow(2,m+1)-1 <= n ) ? k-1 : k-2;
+    }else{
+        bool RequiredNumberInRange=false;
+        istringstream mySS(bitset<11>(k-1).to_string());
+        int kless1Bin;
+        mySS>>kless1Bin;
+        //find rightmost 0 digit, or first 0 digit from right
+        auto copy=kless1Bin;
+        int additive=1;//never going to be the last digit which i so final value will never be 1
+        while(copy!=0){
+            int focusDigit=copy%10;
+            if(focusDigit==0) break;
+            additive*=10;
+            copy/=10;
+        }
+        int requiredNumberBin=kless1Bin+additive;
+        if(Binary::from(requiredNumberBin)<=n) RequiredNumberInRange=true;
+        result=(RequiredNumberInRange)?k-1:k-2;
+    }
+    return result;
+}
+int main(){
+    int t;
+    cin >> t;
+    for(int a0 = 0; a0 < t; a0++){
+        int n;
+        int k;
+        cin >> n >> k;
+        //can determine result based on the size of k
+        cout<<getResult(k,n)<<endl;
+    }
+    return 0;
+}
